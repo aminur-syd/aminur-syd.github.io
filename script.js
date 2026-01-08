@@ -270,13 +270,14 @@ async function init() {
   }
 
   const featuredVideos = await loadFeaturedVideosFromRepo();
-  if (Array.isArray(featuredVideos) && featuredVideos.length) {
-    // Prefer showing the 2nd+ videos here (latest is already featured above),
-    // but if we only have one video, show it rather than an empty state.
-    const startIndex = featuredVideos.length > 1 ? 1 : 0;
-    renderVideoGrid(featuredVideos.slice(startIndex, startIndex + 3));
-  } else if (state.videos?.length) {
-    renderVideoGrid(state.videos.slice(0, 3));
+  if (Array.isArray(featuredVideos) && featuredVideos.length > 1) {
+    // Show 2nd, 3rd, 4th videos in the grid (latest is already featured above)
+    renderVideoGrid(featuredVideos.slice(1, 4));
+  } else if (Array.isArray(featuredVideos) && featuredVideos.length === 1) {
+    // Avoid duplicating the latest video in the grid.
+    renderVideoGridEmpty();
+  } else if (state.videos?.length > 1) {
+    renderVideoGrid(state.videos.slice(1, 4));
   } else {
     renderVideoGridEmpty();
   }
