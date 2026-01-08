@@ -9,12 +9,16 @@ const state = {
   // - Facebook: { type: "facebook", url: "https://www.facebook.com/reel/884788363525165" }
   featured: {
     type: "youtube",
-    id: "lsyJUAIFxqo"
+    id: "gNy7aFnh4Ig"
   },
 
   // Replace these with real YouTube video IDs (the part after v= in a YouTube URL)
   // Optional manual fallback (leave empty if you only want your channel’s real videos)
-  videos: []
+  videos: [
+    { id: "gNy7aFnh4Ig", title: "", published: "" },
+    { id: "7lB3q41CrEQ", title: "", published: "" },
+    { id: "m0ZPypfQtyU", title: "", published: "" }
+  ]
 };
 
 const THEME_KEY = "theme";
