@@ -22,6 +22,26 @@ const state = {
   ]
 };
 
+// Top slideshow images (static sites can't list directories at runtime).
+// Requested: first image must be /assets/IMG_1074.jpg
+const TOP_SLIDESHOW_IMAGES = [
+  "/assets/IMG_1074.jpg",
+  "/assets/IMG_1669.jpg",
+  "/assets/IMG_2346.jpg",
+  "/assets/IMG_3117.jpg",
+  "/assets/IMG_3161.jpg",
+  "/assets/IMG_3247.jpg",
+  "/assets/IMG_4496.jpg",
+  "/assets/IMG_4655.jpg",
+  "/assets/IMG_5941.jpg",
+  "/assets/IMG_6996.jpg",
+  "/assets/IMG_7237.jpg",
+  "/assets/IMG_8293.jpg",
+  "/assets/IMG_8924.jpg",
+  "/assets/IMG_9328.jpg",
+  "/assets/dji_mimo.JPG"
+];
+
 const THEME_KEY = "theme";
 
 function getPreferredTheme() {
@@ -217,6 +237,93 @@ function setupNavToggle() {
   });
 }
 
+function setupTopSlideshow() {
+  const img = document.getElementById("top-slideshow-image");
+  const controls = document.getElementById("top-slideshow-controls");
+  if (!img || !controls) return;
+
+  const slides = TOP_SLIDESHOW_IMAGES.filter(Boolean);
+  if (!slides.length) return;
+
+  let currentIndex = 0;
+  let timerId = null;
+
+  function setActiveButton(index) {
+    controls.querySelectorAll("button").forEach((btn) => {
+      const btnIndex = Number(btn.dataset.index);
+      btn.setAttribute("aria-current", btnIndex === index ? "true" : "false");
+    });
+  }
+
+  function preloadNext(index) {
+    const next = slides[(index + 1) % slides.length];
+    const pre = new Image();
+    pre.src = next;
+  }
+
+  function show(index) {
+    const nextIndex = ((index % slides.length) + slides.length) % slides.length;
+    const nextSrc = slides[nextIndex];
+
+    // Apply desktop crop preference for this slide (mobile stays centered via CSS).
+    const desktopPos = TOP_SLIDESHOW_DESKTOP_OBJECT_POSITION[nextSrc] || "50% 35%";
+    img.style.setProperty("--top-slide-pos", desktopPos);
+
+    // Fade out first, then swap image, then fade in.
+    img.classList.add("is-fading");
+
+    const pre = new Image();
+    const swap = () => {
+      window.setTimeout(() => {
+        img.src = nextSrc;
+        img.alt = `Photo ${nextIndex + 1}`;
+        requestAnimationFrame(() => img.classList.remove("is-fading"));
+      }, 180);
+    };
+    pre.onload = swap;
+    pre.onerror = swap;
+    pre.src = nextSrc;
+
+    currentIndex = nextIndex;
+    setActiveButton(currentIndex);
+    preloadNext(currentIndex);
+  }
+
+  function restartTimer() {
+    if (timerId) window.clearInterval(timerId);
+    timerId = window.setInterval(() => show(currentIndex + 1), 5000);
+  }
+
+  // Build dot buttons (1..N)
+  controls.innerHTML = slides
+    .map((_, i) => {
+      const current = i === 0 ? "true" : "false";
+      return `
+        <button class="top-slideshow-btn" type="button" data-index="${i}" aria-label="Show photo ${i + 1}" aria-current="${current}"></button>
+      `;
+    })
+    .join("");
+
+  controls.querySelectorAll("button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.index);
+      if (!Number.isFinite(index)) return;
+      show(index);
+      restartTimer();
+    });
+  });
+
+  // Ensure we start on IMG_1074.jpg (requested)
+  const requestedFirst = "/assets/IMG_1074.jpg";
+  const requestedIndex = slides.indexOf(requestedFirst);
+  if (requestedIndex > 0) {
+    show(requestedIndex);
+  } else {
+    show(0);
+  }
+  restartTimer();
+}
+
 async function loadLatestFeaturedFromRepo() {
   try {
     // `no-store` so you see updates quickly after deploy.
@@ -265,13 +372,18 @@ async function init() {
 
   setupNavToggle();
 
-  const latest = await loadLatestFeaturedFromRepo();
-  if (latest) {
-    renderFeaturedEmbed(latest);
-  } else if (state.featured) {
-    renderFeaturedEmbed(state.featured);
-  } else if (state.videos?.length) {
-    renderFeaturedEmbed({ type: "youtube", id: state.videos[0].id });
+  setupTopSlideshow();
+
+  // Only fetch/render the featured embed if the mount exists on the page.
+  if (document.getElementById("featured-embed")) {
+    const latest = await loadLatestFeaturedFromRepo();
+    if (latest) {
+      renderFeaturedEmbed(latest);
+    } else if (state.featured) {
+      renderFeaturedEmbed(state.featured);
+    } else if (state.videos?.length) {
+      renderFeaturedEmbed({ type: "youtube", id: state.videos[0].id });
+    }
   }
 
   const featuredVideos = await loadFeaturedVideosFromRepo();

@@ -58,10 +58,23 @@
   </header>
 
   <main id="main">
+    <section class="top-slideshow" aria-label="Photo slideshow">
+      <div class="top-slideshow-track">
+        <img
+          class="top-slideshow-image"
+          id="top-slideshow-image"
+          src="/assets/IMG_1074.jpg"
+          alt="Photo 1"
+          loading="eager"
+          decoding="async"
+        />
+        <div class="top-slideshow-controls" id="top-slideshow-controls" aria-label="Slideshow buttons"></div>
+      </div>
+    </section>
+
     <section class="hero">
       <div class="container hero-inner">
         <div class="hero-copy">
-          <p class="kicker">Moto Blogger</p>
           <h1>
             <span class="hero-title-main">
               <span class="hero-title-line">Every ride tells a story.</span>
@@ -92,15 +105,6 @@
               <dd>Travel + reviews</dd>
             </div>
           </dl>
-        </div>
-
-        <div class="hero-card" role="region" aria-label="Featured">
-          <div class="hero-card-top">
-            <p class="hero-card-label">Featured</p>
-            <p class="hero-card-title">Latest ride video</p>
-            <p class="hero-card-desc">Watch the latest ride video from my YouTube channel.</p>
-          </div>
-          <div class="hero-embed" id="featured-embed" aria-label="Featured video embed"></div>
         </div>
       </div>
     </section>
