@@ -731,10 +731,17 @@ h1 {
   font-weight: 900;
   font-size: clamp(28px, 3vw, 44px);
   line-height: 1.05;
-  background: linear-gradient(135deg, rgba(154,230,255,0.9), rgba(182,255,143,0.7));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--text);
+}
+
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .subscriber-count {
+    background: linear-gradient(135deg, rgba(154,230,255,0.9), rgba(182,255,143,0.7));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
 }
 
 .subscriber-meta {

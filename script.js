@@ -207,7 +207,14 @@ async function loadSubscribers() {
     const updated = document.getElementById("subscribers-updated");
     if (updated) updated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   } catch {
-    // Ignore if API is temporarily unavailable.
+    const heroMount = document.getElementById("subscribers-count");
+    if (heroMount && heroMount.textContent.trim() === "—") heroMount.textContent = "Unavailable";
+
+    const socialMount = document.getElementById("subscribers-live");
+    if (socialMount && socialMount.textContent.trim() === "—") socialMount.textContent = "Unavailable";
+
+    const updated = document.getElementById("subscribers-updated");
+    if (updated) updated.textContent = "Could not load subscribers";
   }
 }
 
