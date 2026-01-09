@@ -4,25 +4,18 @@ Static website for GitHub Pages.
 
 ## Customize (2 minutes)
 
-1) Update your links and videos in [script.js](script.js):
+1) Update your links in [script.js](script.js):
 - `state.youtubeUrl`
 - `state.facebookUrl`
-- `state.videos[]` (replace `id` with your real YouTube video IDs)
+- `state.instagramUrl`
 
-2) Update your contact email in [index.html](index.html) (search for `mailto:`).
+2) The homepage loads YouTube data from the API configured in [script.js](script.js):
+- `API_BASE` (currently `https://api.thewolfrider.me`)
+- Subscribers endpoint: `/api/subscribers`
+- Latest videos endpoint: `/api/latest?type=videos&limit=3`
+- Latest shorts endpoint: `/api/latest?type=shorts&limit=3`
 
-## Auto-show latest YouTube upload (recommended)
-
-This repo includes a GitHub Action that periodically fetches your channel’s newest upload and writes it to [data/latest.json](data/latest.json). The homepage reads that file and shows it as the featured video.
-
-To enable it:
-- Go to your GitHub repo → **Settings** → **Secrets and variables** → **Actions** → **Variables**
-- Add ONE of these variables:
-	- `CHANNEL_URL` (example: `https://www.youtube.com/@thewolfriderbd`)
-	- OR `CHANNEL_ID` (example: `UCxxxxxxxxxxxxxxxxxxxxxx`)
-- Then run the workflow: **Actions** → **Update latest YouTube video** → **Run workflow**
-
-This also updates the homepage “Featured videos” grid via [data/videos.json](data/videos.json) (default: 6 latest uploads).
+3) Update your contact email in [index.html](index.html) (search for `mailto:`).
 
 ## Preview locally
 

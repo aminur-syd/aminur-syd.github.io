@@ -11,26 +11,26 @@ const API_BASE = "https://api.thewolfrider.me";
 // Top slideshow images (static sites can't list directories at runtime).
 // Requested: first image must be /assets/IMG_1074.jpg
 const TOP_SLIDESHOW_IMAGES = [
-  "/assets/IMG_1074.jpg",
-  "/assets/IMG_1669.jpg",
-  "/assets/IMG_2346.jpg",
-  "/assets/IMG_3117.jpg",
-  "/assets/IMG_3161.jpg",
-  "/assets/IMG_3247.jpg",
-  "/assets/IMG_4496.jpg",
-  "/assets/IMG_4655.jpg",
-  "/assets/IMG_5941.jpg",
-  "/assets/IMG_6996.jpg",
-  "/assets/IMG_7237.jpg",
-  "/assets/IMG_8293.jpg",
-  "/assets/IMG_8924.jpg",
-  "/assets/IMG_9328.jpg",
-  "/assets/dji_mimo.JPG"
+  "assets/IMG_1074.jpg",
+  "assets/IMG_1669.jpg",
+  "assets/IMG_2346.jpg",
+  "assets/IMG_3117.jpg",
+  "assets/IMG_3161.jpg",
+  "assets/IMG_3247.jpg",
+  "assets/IMG_4496.jpg",
+  "assets/IMG_4655.jpg",
+  "assets/IMG_5941.jpg",
+  "assets/IMG_6996.jpg",
+  "assets/IMG_7237.jpg",
+  "assets/IMG_8293.jpg",
+  "assets/IMG_8924.jpg",
+  "assets/IMG_9328.jpg",
+  "assets/dji_mimo.JPG"
 ];
 
 // Optional: per-image desktop crop/focus (object-position). Leave most empty since your images are cropped.
 const TOP_SLIDESHOW_DESKTOP_OBJECT_POSITION = {
-  "/assets/IMG_1074.jpg": "50% 28%"
+  "assets/IMG_1074.jpg": "50% 28%"
 };
 
 const THEME_KEY = "theme";
@@ -306,7 +306,7 @@ function setupTopSlideshow() {
   });
 
   // Ensure we start on IMG_1074.jpg (requested)
-  const requestedFirst = "/assets/IMG_1074.jpg";
+  const requestedFirst = "assets/IMG_1074.jpg";
   const requestedIndex = slides.indexOf(requestedFirst);
   if (requestedIndex > 0) {
     show(requestedIndex);
