@@ -35,6 +35,7 @@
 
       <nav class="site-nav" id="site-nav" aria-label="Primary">
         <a href="#videos">Videos</a>
+        <a href="#shorts">Shorts</a>
         <a href="#about">About</a>
         <a href="#social">Social</a>
         <a href="#contact" class="nav-cta">Contact</a>
@@ -68,6 +69,7 @@
           loading="eager"
           decoding="async"
         />
+        <div class="top-slideshow-caption" aria-label="Slideshow title">The Wolf Rider</div>
         <div class="top-slideshow-controls" id="top-slideshow-controls" aria-label="Slideshow buttons"></div>
       </div>
     </section>
@@ -97,8 +99,8 @@
               <dd>Vlogs & rides</dd>
             </div>
             <div>
-              <dt>Style</dt>
-              <dd>Clean storytelling</dd>
+              <dt>Subscribers</dt>
+              <dd id="subscribers-count">—</dd>
             </div>
             <div>
               <dt>Focus</dt>
@@ -113,10 +115,25 @@
       <div class="container">
         <div class="section-head">
           <h2>Featured videos</h2>
-          <p>Hand-picked recent uploads. Click to watch.</p>
+          <p>Newest 3 uploads from YouTube. Click to watch.</p>
         </div>
 
         <div class="grid" id="videos-grid" aria-label="Featured videos"></div>
+
+        <noscript>
+          <p class="muted">Enable JavaScript to see embedded videos.</p>
+        </noscript>
+      </div>
+    </section>
+
+    <section class="section alt" id="shorts">
+      <div class="container">
+        <div class="section-head">
+          <h2>Featured shorts</h2>
+          <p>Newest 3 shorts from YouTube. Tap to watch.</p>
+        </div>
+
+        <div class="grid" id="shorts-grid" aria-label="Featured shorts"></div>
 
         <noscript>
           <p class="muted">Enable JavaScript to see embedded videos.</p>
@@ -169,7 +186,8 @@
           <p>Follow the ride and stay updated.</p>
         </div>
 
-        <div class="social-cards">
+        <div class="social-layout">
+          <div class="social-cards">
           <a class="social-card" id="youtube-link" href="https://www.youtube.com/" target="_blank" rel="noreferrer">
             <div class="social-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -211,6 +229,14 @@
             </div>
             <span class="social-arrow" aria-hidden="true">→</span>
           </a>
+
+          </div>
+
+          <aside class="subscriber-box" aria-label="Live subscribers">
+            <p class="subscriber-label">Live subscribers</p>
+            <p class="subscriber-count" id="subscribers-live">—</p>
+            <p class="subscriber-meta muted" id="subscribers-updated">Updating…</p>
+          </aside>
         </div>
       </div>
     </section>

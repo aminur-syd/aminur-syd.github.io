@@ -1,26 +1,12 @@
+// Site config
 const state = {
-  // Replace these with your real links
   youtubeUrl: "https://www.youtube.com/@thewolfriderbd",
   facebookUrl: "https://www.facebook.com/thewolfriderbd",
-  instagramUrl: "https://www.instagram.com/thewolfriderbd/",
-
-  // Featured video shown in the hero card
-  // - YouTube: { type: "youtube", id: "VIDEO_ID" }
-  // - Facebook: { type: "facebook", url: "https://www.facebook.com/reel/884788363525165" }
-  featured: {
-    type: "youtube",
-    id: "lsyJUAIFxqo"
-  },
-
-  // Replace these with real YouTube video IDs (the part after v= in a YouTube URL)
-  // Optional manual fallback (leave empty if you only want your channel’s real videos)
-  videos: [
-    { id: "lsyJUAIFxqo", title: "", published: "" },
-    { id: "gNy7aFnh4Ig", title: "", published: "" },
-    { id: "7lB3q41CrEQ", title: "", published: "" },
-    { id: "m0ZPypfQtyU", title: "", published: "" }
-  ]
+  instagramUrl: "https://www.instagram.com/thewolfriderbd/"
 };
+
+// API (exact base provided)
+const API_BASE = "https://api.thewolfrider.me";
 
 // Top slideshow images (static sites can't list directories at runtime).
 // Requested: first image must be /assets/IMG_1074.jpg
@@ -41,6 +27,11 @@ const TOP_SLIDESHOW_IMAGES = [
   "/assets/IMG_9328.jpg",
   "/assets/dji_mimo.JPG"
 ];
+
+// Optional: per-image desktop crop/focus (object-position). Leave most empty since your images are cropped.
+const TOP_SLIDESHOW_DESKTOP_OBJECT_POSITION = {
+  "/assets/IMG_1074.jpg": "50% 28%"
+};
 
 const THEME_KEY = "theme";
 
@@ -101,98 +92,26 @@ function youtubeWatchUrl(videoId) {
   return `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`;
 }
 
-function youtubeEmbedUrl(videoId) {
-  // modestbranding/autoplay are intentionally not forced; keep it clean.
-  const base = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`;
-  const params = new URLSearchParams({
-    rel: "0"
-  });
-  return `${base}?${params.toString()}`;
+function youtubeShortUrl(videoId) {
+  return `https://www.youtube.com/shorts/${encodeURIComponent(videoId)}`;
 }
 
-function youtubePosterUrl(videoId) {
-  // Use maxres if available, fall back to hq via onerror in markup.
-  return `https://i.ytimg.com/vi/${encodeURIComponent(videoId)}/maxresdefault.jpg`;
-}
-
-function facebookEmbedUrl(videoUrl) {
-  // Facebook provides an iframe-based embed via plugins.
-  // The video must be public and allow embedding.
-  const href = encodeURIComponent(String(videoUrl || "").trim());
-  const params = new URLSearchParams({
-    href,
-    show_text: "false",
-    width: "560"
-  });
-  return `https://www.facebook.com/plugins/video.php?${params.toString()}`;
-}
-
-function renderFeaturedEmbed(featured) {
-  const mount = document.getElementById("featured-embed");
-  if (!mount) return;
-
-  const type = featured?.type === "facebook" ? "facebook" : "youtube";
-
-  if (type === "facebook") {
-    const src = facebookEmbedUrl(featured?.url);
-    mount.innerHTML = `
-      <iframe
-        src="${src}"
-        title="Featured video"
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-      ></iframe>
-    `;
-    return;
-  }
-
-  const id = String(featured?.id || "").trim();
-  if (!id) return;
-
-  // Show a real thumbnail immediately (better UX than a blank/black iframe).
-  mount.innerHTML = `
-    <button class="yt-poster" type="button" aria-label="Play featured video">
-      <img
-        class="yt-poster-img"
-        src="${youtubePosterUrl(id)}"
-        alt="Featured video thumbnail"
-        loading="lazy"
-        onerror="this.onerror=null; this.src='https://i.ytimg.com/vi/${encodeURIComponent(id)}/hqdefault.jpg'"
-      />
-      <span class="yt-poster-play" aria-hidden="true">▶</span>
-    </button>
-  `;
-
-  const btn = mount.querySelector(".yt-poster");
-  btn?.addEventListener("click", () => {
-    mount.innerHTML = `
-      <iframe
-        src="${youtubeEmbedUrl(id)}"
-        title="Featured video"
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-      ></iframe>
-    `;
-  });
-}
-
-function renderVideoGrid(videos) {
-  const grid = document.getElementById("videos-grid");
+function renderVideoGrid(mountId, videos, options = {}) {
+  const grid = document.getElementById(mountId);
   if (!grid) return;
+
+  const urlFor = options.kind === "shorts" ? youtubeShortUrl : youtubeWatchUrl;
+  const label = options.kind === "shorts" ? "Watch short" : "Watch video";
 
   grid.innerHTML = videos
     .map((v) => {
-      const title = safeText(v.title) || "YouTube video";
+      const title = safeText(v.title) || "YouTube";
       const desc = safeText(v.desc) || formatPublished(v.published);
-      const watch = youtubeWatchUrl(v.id);
+      const watch = urlFor(v.id);
       const thumb = youtubeThumb(v.id);
 
       return `
-        <a class="video-card" href="${watch}" target="_blank" rel="noreferrer" aria-label="Watch: ${title}">
+        <a class="video-card" href="${watch}" target="_blank" rel="noreferrer" aria-label="${label}: ${title}">
           <div class="video-thumb">
             <img src="${thumb}" alt="${title}" loading="lazy" />
           </div>
@@ -206,14 +125,84 @@ function renderVideoGrid(videos) {
     .join("");
 }
 
-function renderVideoGridEmpty() {
-  const grid = document.getElementById("videos-grid");
+function renderGridEmpty(mountId, message) {
+  const grid = document.getElementById(mountId);
   if (!grid) return;
   grid.innerHTML = `
     <div class="muted" style="padding: 12px;">
-      Featured videos will appear after the GitHub Action updates <strong>data/videos.json</strong> for your channel.
+      ${safeText(message)}
     </div>
   `;
+}
+
+async function fetchJson(pathWithQuery) {
+  const url = new URL(pathWithQuery, API_BASE);
+  // `no-store` so you see updates quickly after deploy.
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function normalizeVideoItems(payload) {
+  const root = payload?.data ?? payload;
+  const items =
+    (Array.isArray(root) && root) ||
+    (Array.isArray(root?.items) && root.items) ||
+    (Array.isArray(root?.videos) && root.videos) ||
+    (Array.isArray(root?.results) && root.results) ||
+    [];
+
+  return items
+    .map((item) => {
+      const id =
+        (typeof item?.id === "string" && item.id) ||
+        (typeof item?.videoId === "string" && item.videoId) ||
+        (typeof item?.video_id === "string" && item.video_id) ||
+        (typeof item?.youtubeId === "string" && item.youtubeId) ||
+        (typeof item?.snippet?.resourceId?.videoId === "string" && item.snippet.resourceId.videoId) ||
+        (typeof item?.snippet?.videoId === "string" && item.snippet.videoId) ||
+        "";
+
+      const title = item?.title ?? item?.snippet?.title ?? "";
+      const published = item?.published ?? item?.publishedAt ?? item?.published_at ?? item?.snippet?.publishedAt ?? "";
+      const desc = item?.desc ?? item?.description ?? item?.snippet?.description ?? "";
+
+      return { id: String(id).trim(), title: safeText(title), published: safeText(published), desc: safeText(desc) };
+    })
+    .filter((v) => v.id);
+}
+
+async function loadSubscribers() {
+  try {
+    // Exact URL provided:
+    // https://api.thewolfrider.me/api/subscribers
+    const payload = await fetchJson("/api/subscribers");
+    const value = payload?.subscribers ?? payload?.count ?? payload?.data?.subscribers ?? payload?.data?.count;
+    const num = Number(value);
+    if (!Number.isFinite(num)) return;
+
+    const formatted = num.toLocaleString();
+
+    const heroMount = document.getElementById("subscribers-count");
+    if (heroMount) heroMount.textContent = formatted;
+
+    const socialMount = document.getElementById("subscribers-live");
+    if (socialMount) socialMount.textContent = formatted;
+
+    const updated = document.getElementById("subscribers-updated");
+    if (updated) updated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  } catch {
+    // Ignore if API is temporarily unavailable.
+  }
+}
+
+async function loadLatest(type, limit) {
+  // Exact URL provided:
+  // https://api.thewolfrider.me/api/latest?type=videos&limit=9
+  // https://api.thewolfrider.me/api/latest?type=shorts&limit=9
+  const qs = new URLSearchParams({ type: String(type), limit: String(limit) });
+  const payload = await fetchJson(`/api/latest?${qs.toString()}`);
+  return normalizeVideoItems(payload);
 }
 
 function setupNavToggle() {
@@ -289,9 +278,12 @@ function setupTopSlideshow() {
     preloadNext(currentIndex);
   }
 
-  function restartTimer() {
-    if (timerId) window.clearInterval(timerId);
-    timerId = window.setInterval(() => show(currentIndex + 1), 5000);
+  function scheduleNextTick() {
+    if (timerId) window.clearTimeout(timerId);
+    timerId = window.setTimeout(() => {
+      show(currentIndex + 1);
+      scheduleNextTick();
+    }, 5000);
   }
 
   // Build dot buttons (1..N)
@@ -309,7 +301,7 @@ function setupTopSlideshow() {
       const index = Number(btn.dataset.index);
       if (!Number.isFinite(index)) return;
       show(index);
-      restartTimer();
+      scheduleNextTick();
     });
   });
 
@@ -321,40 +313,16 @@ function setupTopSlideshow() {
   } else {
     show(0);
   }
-  restartTimer();
+
+  scheduleNextTick();
+
+  // Some browsers pause timers in background tabs; resume cleanly when visible.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleNextTick();
+  });
 }
 
-async function loadLatestFeaturedFromRepo() {
-  try {
-    // `no-store` so you see updates quickly after deploy.
-    const url = new URL(`data/latest.json?ts=${Date.now()}`, window.location.href);
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (data && data.type === "youtube" && typeof data.id === "string" && data.id.trim()) {
-      return { type: "youtube", id: data.id.trim() };
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-async function loadFeaturedVideosFromRepo() {
-  try {
-    const url = new URL(`data/videos.json?ts=${Date.now()}`, window.location.href);
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return null;
-    const data = await res.json();
-    const videos = Array.isArray(data?.videos) ? data.videos : null;
-    if (!videos || !videos.length) return null;
-    return videos
-      .filter((v) => v && typeof v.id === "string" && v.id.trim())
-      .map((v) => ({ id: v.id.trim(), title: safeText(v.title), published: safeText(v.published), desc: safeText(v.desc) }));
-  } catch {
-    return null;
-  }
-}
+// Repo JSON loaders removed (now using API_BASE endpoints).
 
 async function init() {
   const year = document.getElementById("year");
@@ -374,29 +342,35 @@ async function init() {
 
   setupTopSlideshow();
 
-  // Only fetch/render the featured embed if the mount exists on the page.
-  if (document.getElementById("featured-embed")) {
-    const latest = await loadLatestFeaturedFromRepo();
-    if (latest) {
-      renderFeaturedEmbed(latest);
-    } else if (state.featured) {
-      renderFeaturedEmbed(state.featured);
-    } else if (state.videos?.length) {
-      renderFeaturedEmbed({ type: "youtube", id: state.videos[0].id });
+  loadSubscribers();
+  // "Real-time" refresh (lightweight polling)
+  let subTimer = window.setInterval(() => {
+    if (document.visibilityState === "visible") loadSubscribers();
+  }, 5000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") loadSubscribers();
+  });
+
+  try {
+    const videos = await loadLatest("videos", 3);
+    if (videos.length) {
+      renderVideoGrid("videos-grid", videos);
+    } else {
+      renderGridEmpty("videos-grid", "No videos found yet.");
     }
+  } catch {
+    renderGridEmpty("videos-grid", "Could not load videos right now.");
   }
 
-  const featuredVideos = await loadFeaturedVideosFromRepo();
-  if (Array.isArray(featuredVideos) && featuredVideos.length > 1) {
-    // Show 2nd, 3rd, 4th videos in the grid (latest is already featured above)
-    renderVideoGrid(featuredVideos.slice(1, 4));
-  } else if (Array.isArray(featuredVideos) && featuredVideos.length === 1) {
-    // Avoid duplicating the latest video in the grid.
-    renderVideoGridEmpty();
-  } else if (state.videos?.length > 1) {
-    renderVideoGrid(state.videos.slice(1, 4));
-  } else {
-    renderVideoGridEmpty();
+  try {
+    const shorts = await loadLatest("shorts", 3);
+    if (shorts.length) {
+      renderVideoGrid("shorts-grid", shorts, { kind: "shorts" });
+    } else {
+      renderGridEmpty("shorts-grid", "No shorts found yet.");
+    }
+  } catch {
+    renderGridEmpty("shorts-grid", "Could not load shorts right now.");
   }
 }
 
