@@ -107,8 +107,8 @@ function renderVideoGrid(mountId, videos, options = {}) {
     .map((v) => {
       const title = safeText(v.title) || "YouTube";
       const desc = safeText(v.desc) || formatPublished(v.published);
-      const watch = urlFor(v.id);
-      const thumb = youtubeThumb(v.id);
+      const watch = safeText(v.url) || urlFor(v.id);
+      const thumb = safeText(v.thumbnail) || youtubeThumb(v.id);
 
       return `
         <a class="video-card" href="${watch}" target="_blank" rel="noreferrer" aria-label="${label}: ${title}">
@@ -166,8 +166,17 @@ function normalizeVideoItems(payload) {
       const title = item?.title ?? item?.snippet?.title ?? "";
       const published = item?.published ?? item?.publishedAt ?? item?.published_at ?? item?.snippet?.publishedAt ?? "";
       const desc = item?.desc ?? item?.description ?? item?.snippet?.description ?? "";
+      const url = item?.url ?? item?.watchUrl ?? item?.watch_url ?? "";
+      const thumbnail = item?.thumbnail ?? item?.thumb ?? item?.thumbUrl ?? item?.thumb_url ?? "";
 
-      return { id: String(id).trim(), title: safeText(title), published: safeText(published), desc: safeText(desc) };
+      return {
+        id: String(id).trim(),
+        title: safeText(title),
+        published: safeText(published),
+        desc: safeText(desc),
+        url: safeText(url),
+        thumbnail: safeText(thumbnail)
+      };
     })
     .filter((v) => v.id);
 }
@@ -177,7 +186,13 @@ async function loadSubscribers() {
     // Exact URL provided:
     // https://api.thewolfrider.me/api/subscribers
     const payload = await fetchJson("/api/subscribers");
-    const value = payload?.subscribers ?? payload?.count ?? payload?.data?.subscribers ?? payload?.data?.count;
+    const value =
+      payload?.subscriberCount ??
+      payload?.subscribers ??
+      payload?.count ??
+      payload?.data?.subscriberCount ??
+      payload?.data?.subscribers ??
+      payload?.data?.count;
     const num = Number(value);
     if (!Number.isFinite(num)) return;
 
@@ -341,6 +356,21 @@ async function init() {
   setupNavToggle();
 
   setupTopSlideshow();
+
+  // If opened as a local file, browsers often block API calls.
+  if (window.location.protocol === "file:") {
+    renderGridEmpty(
+      "videos-grid",
+      "Preview via Live Server (or any local web server) to load videos from the API. Opening as a file (file://) can block network requests."
+    );
+    renderGridEmpty(
+      "shorts-grid",
+      "Preview via Live Server (or any local web server) to load shorts from the API. Opening as a file (file://) can block network requests."
+    );
+    const updated = document.getElementById("subscribers-updated");
+    if (updated) updated.textContent = "Preview via Live Server to load subscribers.";
+    return;
+  }
 
   loadSubscribers();
   // "Real-time" refresh (lightweight polling)
