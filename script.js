@@ -197,24 +197,11 @@ async function loadSubscribers() {
     if (!Number.isFinite(num)) return;
 
     const formatted = num.toLocaleString();
-
     const heroMount = document.getElementById("subscribers-count");
     if (heroMount) heroMount.textContent = formatted;
-
-    const socialMount = document.getElementById("subscribers-live");
-    if (socialMount) socialMount.textContent = formatted;
-
-    const updated = document.getElementById("subscribers-updated");
-    if (updated) updated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
   } catch {
     const heroMount = document.getElementById("subscribers-count");
     if (heroMount && heroMount.textContent.trim() === "—") heroMount.textContent = "Unavailable";
-
-    const socialMount = document.getElementById("subscribers-live");
-    if (socialMount && socialMount.textContent.trim() === "—") socialMount.textContent = "Unavailable";
-
-    const updated = document.getElementById("subscribers-updated");
-    if (updated) updated.textContent = "Could not load subscribers";
   }
 }
 
@@ -374,8 +361,6 @@ async function init() {
       "shorts-grid",
       "Preview via Live Server (or any local web server) to load shorts from the API. Opening as a file (file://) can block network requests."
     );
-    const updated = document.getElementById("subscribers-updated");
-    if (updated) updated.textContent = "Preview via Live Server to load subscribers.";
     return;
   }
 

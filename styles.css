@@ -497,6 +497,15 @@ h1 {
 .hero-stats dt {
   color: var(--muted2);
   font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-stats .yt-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .hero-stats dd {
@@ -700,55 +709,6 @@ h1 {
   gap: 14px;
 }
 
-.social-layout {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 14px;
-  align-items: start;
-}
-
-.subscriber-box {
-  border-radius: var(--radius);
-  border: 1px solid var(--stroke);
-  background: var(--surface);
-  box-shadow: var(--shadow);
-  padding: 16px;
-  position: sticky;
-  top: 90px;
-}
-
-.subscriber-label {
-  margin: 0;
-  color: var(--muted2);
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  font-weight: 800;
-}
-
-.subscriber-count {
-  margin: 10px 0 4px;
-  font-weight: 900;
-  font-size: clamp(28px, 3vw, 44px);
-  line-height: 1.05;
-  color: var(--text);
-}
-
-@supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .subscriber-count {
-    background: linear-gradient(135deg, rgba(154,230,255,0.9), rgba(182,255,143,0.7));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-  }
-}
-
-.subscriber-meta {
-  margin: 0;
-  font-size: 13px;
-}
-
 .social-card {
   display: flex;
   align-items: center;
@@ -919,14 +879,6 @@ html[data-theme="light"] .footer-inner {
 
   .social-cards {
     grid-template-columns: 1fr;
-  }
-
-  .social-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .subscriber-box {
-    position: static;
   }
 
   .section {
