@@ -368,7 +368,7 @@ async function init() {
   // Lightweight polling for fresh numbers.
   window.setInterval(() => {
     if (document.visibilityState === "visible") refreshYouTube();
-  }, 60000);
+  }, 600000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") refreshYouTube();
   });
