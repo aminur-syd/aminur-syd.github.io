@@ -1,9 +1,20 @@
-// Site config
+﻿// Site config
 const state = {
   youtubeUrl: "https://www.youtube.com/@thewolfriderbd",
   facebookUrl: "https://www.facebook.com/thewolfriderbd",
   instagramUrl: "https://www.instagram.com/thewolfriderbd/"
 };
+
+const BRAND = {
+  name: "The Wolf Rider",
+  url: "https://thewolfrider.me/",
+  logo: "https://thewolfrider.me/assets/Profile%20Logo.png",
+  location: "Dhaka, Bangladesh",
+  keywords:
+    "Bangladesh motovlogger, Yamaha V4 BS7 vlogs, motorcycle travel Bangladesh, Dhaka motovlog, couple bike travel vlog Bangladesh"
+};
+
+const VIDEO_FALLBACK_DESC = "Bangladesh motovlog from Dhaka on a Yamaha V4 BS7 with couple travel highlights.";
 
 // API (exact base provided)
 const API_BASE = "https://api.thewolfrider.me";
@@ -56,7 +67,7 @@ function applyTheme(theme) {
     btn.setAttribute("aria-checked", String(isLight));
     btn.setAttribute("aria-label", isLight ? "Light mode (switch to dark)" : "Dark mode (switch to light)");
   }
-  if (icon) icon.textContent = theme === "light" ? "☀️" : "🌙";
+  if (icon) icon.textContent = theme === "light" ? "SUN" : "MOON";
 }
 
 function setupThemeToggle() {
@@ -75,12 +86,30 @@ function safeText(value) {
   return String(value ?? "");
 }
 
+function cleanText(value) {
+  return safeText(value).replace(/\s+/g, " ").trim();
+}
+
+function truncateText(value, max) {
+  const text = cleanText(value);
+  if (!max || text.length <= max) return text;
+  return `${text.slice(0, max - 3).trimEnd()}...`;
+}
+
 function formatPublished(iso) {
-  const value = String(iso || "").trim();
+  const value = cleanText(iso);
   if (!value) return "";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "";
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+function formatPublishedAttr(iso) {
+  const value = cleanText(iso);
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toISOString();
 }
 
 function youtubeThumb(videoId) {
@@ -105,21 +134,31 @@ function renderVideoGrid(mountId, videos, options = {}) {
 
   grid.innerHTML = videos
     .map((v) => {
-      const title = safeText(v.title) || "YouTube";
-      const desc = safeText(v.desc) || formatPublished(v.published);
+      const title = cleanText(v.title) || "The Wolf Rider";
+      const descSource = cleanText(v.desc);
+      const desc = descSource ? truncateText(descSource, 160) : VIDEO_FALLBACK_DESC;
       const watch = safeText(v.url) || urlFor(v.id);
       const thumb = safeText(v.thumbnail) || youtubeThumb(v.id);
+      const publishedText = formatPublished(v.published);
+      const publishedAttr = formatPublishedAttr(v.published);
 
       return `
-        <a class="video-card" href="${watch}" target="_blank" rel="noreferrer" aria-label="${label}: ${title}">
-          <div class="video-thumb">
-            <img src="${thumb}" alt="${title}" loading="lazy" />
-          </div>
+        <article class="video-card">
+          <a class="video-card-link" href="${watch}" target="_blank" rel="noreferrer" aria-label="${label}: ${title}">
+            <div class="video-thumb">
+              <img src="${thumb}" alt="${title}" loading="lazy" decoding="async" />
+            </div>
+          </a>
           <div class="video-meta">
-            <p class="video-title">${title}</p>
+            <h3 class="video-title">
+              <a href="${watch}" target="_blank" rel="noreferrer">${title}</a>
+            </h3>
             <p class="video-desc">${desc}</p>
+            <p class="video-meta-line">
+              ${publishedText ? `<time datetime="${publishedAttr}">${publishedText}</time> | ` : ""}${BRAND.location} | Yamaha V4 BS7
+            </p>
           </div>
-        </a>
+        </article>
       `;
     })
     .join("");
@@ -129,9 +168,11 @@ function renderGridEmpty(mountId, message) {
   const grid = document.getElementById(mountId);
   if (!grid) return;
   grid.innerHTML = `
-    <div class="muted" style="padding: 12px;">
-      ${safeText(message)}
-    </div>
+    <article class="video-card video-card--empty">
+      <div class="video-meta">
+        <p class="video-desc">${safeText(message)}</p>
+      </div>
+    </article>
   `;
 }
 
@@ -171,11 +212,11 @@ function normalizeVideoItems(payload) {
 
       return {
         id: String(id).trim(),
-        title: safeText(title),
-        published: safeText(published),
-        desc: safeText(desc),
-        url: safeText(url),
-        thumbnail: safeText(thumbnail)
+        title: cleanText(title),
+        published: cleanText(published),
+        desc: cleanText(desc),
+        url: cleanText(url),
+        thumbnail: cleanText(thumbnail)
       };
     })
     .filter((v) => v.id);
@@ -201,7 +242,7 @@ async function loadSubscribers() {
     if (heroMount) heroMount.textContent = formatted;
   } catch {
     const heroMount = document.getElementById("subscribers-count");
-    if (heroMount && heroMount.textContent.trim() === "—") heroMount.textContent = "Unavailable";
+    if (heroMount && heroMount.textContent.trim() === "--") heroMount.textContent = "Unavailable";
   }
 }
 
@@ -331,6 +372,72 @@ function setupTopSlideshow() {
   });
 }
 
+function buildVideoSchemaItems(videos, options = {}) {
+  const urlFor = options.kind === "shorts" ? youtubeShortUrl : youtubeWatchUrl;
+
+  return videos.map((video) => {
+    const watch = cleanText(video.url) || urlFor(video.id);
+    const thumb = cleanText(video.thumbnail) || youtubeThumb(video.id);
+    const uploadDate = formatPublishedAttr(video.published);
+    const name = cleanText(video.title) || "The Wolf Rider video";
+    const description = cleanText(video.desc) || VIDEO_FALLBACK_DESC;
+
+    const schema = {
+      "@type": "VideoObject",
+      name,
+      description,
+      thumbnailUrl: [thumb],
+      contentUrl: watch,
+      embedUrl: `https://www.youtube.com/embed/${encodeURIComponent(video.id)}`,
+      author: {
+        "@type": "Person",
+        name: "Al-amin Khan"
+      },
+      publisher: {
+        "@type": "Organization",
+        name: BRAND.name,
+        url: BRAND.url,
+        logo: {
+          "@type": "ImageObject",
+          url: BRAND.logo
+        }
+      },
+      contentLocation: {
+        "@type": "Place",
+        name: BRAND.location
+      },
+      keywords: BRAND.keywords,
+      genre: "Motovlogging",
+      inLanguage: "en"
+    };
+
+    if (uploadDate) schema.uploadDate = uploadDate;
+    return schema;
+  });
+}
+
+function updateVideoSchema(videos, shorts) {
+  const script = document.getElementById("video-schema");
+  if (!script) return;
+
+  const items = [
+    ...buildVideoSchemaItems(videos || []),
+    ...buildVideoSchemaItems(shorts || [], { kind: "shorts" })
+  ];
+
+  if (!items.length) {
+    script.textContent = "";
+    return;
+  }
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@graph": items
+  };
+
+  script.textContent = JSON.stringify(schema);
+}
+
 // Repo JSON loaders removed (now using API_BASE endpoints).
 
 async function init() {
@@ -373,10 +480,13 @@ async function init() {
     if (document.visibilityState === "visible") loadSubscribers();
   });
 
+  let latestVideos = [];
+  let latestShorts = [];
+
   try {
-    const videos = await loadLatest("videos", 3);
-    if (videos.length) {
-      renderVideoGrid("videos-grid", videos);
+    latestVideos = await loadLatest("videos", 3);
+    if (latestVideos.length) {
+      renderVideoGrid("videos-grid", latestVideos);
     } else {
       renderGridEmpty("videos-grid", "No videos found yet.");
     }
@@ -385,15 +495,17 @@ async function init() {
   }
 
   try {
-    const shorts = await loadLatest("shorts", 3);
-    if (shorts.length) {
-      renderVideoGrid("shorts-grid", shorts, { kind: "shorts" });
+    latestShorts = await loadLatest("shorts", 3);
+    if (latestShorts.length) {
+      renderVideoGrid("shorts-grid", latestShorts, { kind: "shorts" });
     } else {
       renderGridEmpty("shorts-grid", "No shorts found yet.");
     }
   } catch {
     renderGridEmpty("shorts-grid", "Could not load shorts right now.");
   }
+
+  updateVideoSchema(latestVideos, latestShorts);
 }
 
 document.addEventListener("DOMContentLoaded", init);

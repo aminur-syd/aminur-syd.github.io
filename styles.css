@@ -623,6 +623,18 @@ h1 {
   border: 1px solid var(--stroke);
   background: var(--surface);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.video-card-link {
+  display: block;
+  color: inherit;
+}
+
+.video-card-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(154, 230, 255, 0.26);
 }
 
 .video-thumb {
@@ -650,10 +662,24 @@ h1 {
   font-size: 14px;
 }
 
+.video-title a {
+  color: inherit;
+}
+
 .video-desc {
   margin: 6px 0 0;
   color: var(--muted);
   font-size: 13px;
+}
+
+.video-meta-line {
+  margin: 8px 0 0;
+  color: var(--muted2);
+  font-size: 12px;
+}
+
+.video-card--empty .video-meta {
+  padding: 16px;
 }
 
 .two-col {
