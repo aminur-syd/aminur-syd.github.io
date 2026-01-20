@@ -19,6 +19,9 @@ const VIDEO_FALLBACK_DESC = "Bangladesh motovlog from Dhaka on a Yamaha V4 BS7 w
 // API (exact base provided)
 const API_BASE = "https://api.thewolfrider.me";
 
+// API endpoint served from your VPS (update if needed)
+const YOUTUBE_API_ENDPOINT = "https://api.thewolfrider.me/api/youtube";
+
 // Top slideshow images (static sites can't list directories at runtime).
 // Requested: first image must be /assets/IMG_1074.jpg
 const TOP_SLIDESHOW_IMAGES = [
@@ -58,7 +61,7 @@ function applyTheme(theme) {
   root.dataset.theme = theme;
 
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", theme === "light" ? "#ffffff" : "#0b1220");
+const API_BASE = "https://api.thewolfrider.me"; // API endpoint served from your VPS (update if needed)
 
   const btn = document.querySelector(".theme-switch");
   const icon = document.querySelector(".theme-switch-icon");
@@ -176,47 +179,28 @@ function renderGridEmpty(mountId, message) {
   `;
 }
 
-async function fetchJson(pathWithQuery) {
-  const url = new URL(pathWithQuery, API_BASE);
+function getYouTubeApiEndpoint() {
+  return window.YOUTUBE_API_ENDPOINT || YOUTUBE_API_ENDPOINT;
+}
+
+async function fetchJson(url) {
   // `no-store` so you see updates quickly after deploy.
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
 
-function normalizeVideoItems(payload) {
-  const root = payload?.data ?? payload;
-  const items =
-    (Array.isArray(root) && root) ||
-    (Array.isArray(root?.items) && root.items) ||
-    (Array.isArray(root?.videos) && root.videos) ||
-    (Array.isArray(root?.results) && root.results) ||
-    [];
-
-  return items
+function normalizeFeaturedItems(items) {
+  return (Array.isArray(items) ? items : [])
     .map((item) => {
-      const id =
-        (typeof item?.id === "string" && item.id) ||
-        (typeof item?.videoId === "string" && item.videoId) ||
-        (typeof item?.video_id === "string" && item.video_id) ||
-        (typeof item?.youtubeId === "string" && item.youtubeId) ||
-        (typeof item?.snippet?.resourceId?.videoId === "string" && item.snippet.resourceId.videoId) ||
-        (typeof item?.snippet?.videoId === "string" && item.snippet.videoId) ||
-        "";
-
-      const title = item?.title ?? item?.snippet?.title ?? "";
-      const published = item?.published ?? item?.publishedAt ?? item?.published_at ?? item?.snippet?.publishedAt ?? "";
-      const desc = item?.desc ?? item?.description ?? item?.snippet?.description ?? "";
-      const url = item?.url ?? item?.watchUrl ?? item?.watch_url ?? "";
-      const thumbnail = item?.thumbnail ?? item?.thumb ?? item?.thumbUrl ?? item?.thumb_url ?? "";
-
+      const id = typeof item?.id === "string" ? item.id : "";
       return {
         id: String(id).trim(),
-        title: cleanText(title),
-        published: cleanText(published),
-        desc: cleanText(desc),
-        url: cleanText(url),
-        thumbnail: cleanText(thumbnail)
+        title: safeText(item?.title ?? ""),
+        published: safeText(item?.publishedAt ?? ""),
+        desc: safeText(item?.description ?? item?.desc ?? ""),
+        url: safeText(item?.url ?? ""),
+        thumbnail: safeText(item?.thumbnail ?? "")
       };
     })
     .filter((v) => v.id);
@@ -246,13 +230,37 @@ async function loadSubscribers() {
   }
 }
 
-async function loadLatest(type, limit) {
-  // Exact URL provided:
-  // https://api.thewolfrider.me/api/latest?type=videos&limit=9
-  // https://api.thewolfrider.me/api/latest?type=shorts&limit=9
-  const qs = new URLSearchParams({ type: String(type), limit: String(limit) });
-  const payload = await fetchJson(`/api/latest?${qs.toString()}`);
-  return normalizeVideoItems(payload);
+async function fetchYouTubeData() {
+  const endpoint = getYouTubeApiEndpoint();
+  return fetchJson(endpoint);
+}
+
+function updateSubscriberCount(payload) {
+  const count = Number(payload?.subscriberCount);
+  if (!Number.isFinite(count)) return false;
+
+  const heroMount = document.getElementById("subscribers-count");
+  if (heroMount) heroMount.textContent = count.toLocaleString();
+  return true;
+}
+
+function updateFeaturedGrids(payload) {
+  const videos = normalizeFeaturedItems(payload?.featuredVideos);
+  const shorts = normalizeFeaturedItems(payload?.featuredShorts);
+
+  if (videos.length) {
+    renderVideoGrid("videos-grid", videos);
+  } else {
+    renderGridEmpty("videos-grid", "No videos found yet.");
+  }
+
+  if (shorts.length) {
+    renderVideoGrid("shorts-grid", shorts, { kind: "shorts" });
+  } else {
+    renderGridEmpty("shorts-grid", "No shorts found yet.");
+  }
+
+  return videos.length > 0 || shorts.length > 0;
 }
 
 function setupNavToggle() {
@@ -438,7 +446,7 @@ function updateVideoSchema(videos, shorts) {
   script.textContent = JSON.stringify(schema);
 }
 
-// Repo JSON loaders removed (now using API_BASE endpoints).
+// Repo JSON loaders removed (now using the VPS YouTube endpoint).
 
 async function init() {
   const year = document.getElementById("year");
@@ -471,13 +479,32 @@ async function init() {
     return;
   }
 
-  loadSubscribers();
-  // "Real-time" refresh (lightweight polling)
-  let subTimer = window.setInterval(() => {
-    if (document.visibilityState === "visible") loadSubscribers();
-  }, 5000);
+  let hasLoadedOnce = false;
+
+  async function refreshYouTube() {
+    try {
+      const payload = await fetchYouTubeData();
+      updateSubscriberCount(payload);
+      updateFeaturedGrids(payload);
+      hasLoadedOnce = true;
+    } catch {
+      if (!hasLoadedOnce) {
+        const heroMount = document.getElementById("subscribers-count");
+        if (heroMount && heroMount.textContent.trim() === "—") heroMount.textContent = "Unavailable";
+        renderGridEmpty("videos-grid", "Could not load videos right now.");
+        renderGridEmpty("shorts-grid", "Could not load shorts right now.");
+      }
+    }
+  }
+
+  await refreshYouTube();
+
+  // Lightweight polling for fresh numbers.
+  window.setInterval(() => {
+    if (document.visibilityState === "visible") refreshYouTube();
+  }, 600000);
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") loadSubscribers();
+    if (document.visibilityState === "visible") refreshYouTube();
   });
 
   let latestVideos = [];
