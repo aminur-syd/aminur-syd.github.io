@@ -19,8 +19,9 @@ const VIDEO_FALLBACK_DESC = "Bangladesh motovlog from Dhaka on a Yamaha R15M BS7
 // API (exact base provided)
 const API_BASE = "https://api.thewolfrider.me";
 
-// API endpoint served from your VPS (update if needed)
-const YOUTUBE_API_ENDPOINT = `${API_BASE}/api/youtube`;
+// API endpoints served from your VPS (update if needed)
+const YOUTUBE_FEATURED_ENDPOINT = `${API_BASE}/youtube/featured`;
+const YOUTUBE_STATS_ENDPOINT = `${API_BASE}/youtube/stats`;
 
 // Top slideshow images (static sites can't list directories at runtime).
 // Requested: first image must be /assets/IMG_1074.jpg
@@ -234,8 +235,12 @@ function renderGridEmpty(mountId, message) {
   refreshScrollAnimations(grid);
 }
 
-function getYouTubeApiEndpoint() {
-  return window.YOUTUBE_API_ENDPOINT || YOUTUBE_API_ENDPOINT;
+function getYouTubeFeaturedEndpoint() {
+  return window.YOUTUBE_FEATURED_ENDPOINT || YOUTUBE_FEATURED_ENDPOINT;
+}
+
+function getYouTubeStatsEndpoint() {
+  return window.YOUTUBE_STATS_ENDPOINT || YOUTUBE_STATS_ENDPOINT;
 }
 
 async function fetchJson(url) {
@@ -252,17 +257,33 @@ function normalizeFeaturedItems(items) {
       return {
         id: String(id).trim(),
         title: safeText(item?.title ?? ""),
-        published: safeText(item?.publishedAt ?? ""),
+        published: safeText(item?.publishedAt ?? item?.published ?? ""),
         desc: safeText(item?.description ?? item?.desc ?? ""),
         url: safeText(item?.url ?? ""),
-        thumbnail: safeText(item?.thumbnail ?? "")
+        thumbnail: safeText(item?.thumbnail ?? item?.thumb ?? "")
       };
     })
     .filter((v) => v.id);
 }
 
-async function fetchYouTubeData() {
-  const endpoint = getYouTubeApiEndpoint();
+function getPublishedTime(value) {
+  const date = new Date(cleanText(value));
+  const time = date.getTime();
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function selectNewestItems(items, limit = 3) {
+  const sorted = [...items].sort((a, b) => getPublishedTime(b.published) - getPublishedTime(a.published));
+  return sorted.slice(0, limit);
+}
+
+async function fetchYouTubeFeatured() {
+  const endpoint = getYouTubeFeaturedEndpoint();
+  return fetchJson(endpoint);
+}
+
+async function fetchYouTubeStats() {
+  const endpoint = getYouTubeStatsEndpoint();
   return fetchJson(endpoint);
 }
 
@@ -275,9 +296,27 @@ function updateSubscriberCount(payload) {
   return true;
 }
 
+function updateViewCount(payload) {
+  const count = Number(payload?.viewCount);
+  if (!Number.isFinite(count)) return false;
+
+  const heroMount = document.getElementById("viewers-count");
+  if (heroMount) heroMount.textContent = count.toLocaleString();
+  return true;
+}
+
+function setStatUnavailable(id) {
+  const heroMount = document.getElementById(id);
+  if (!heroMount) return;
+  const current = heroMount.textContent.trim();
+  if (current === "—" || current === "Loading") heroMount.textContent = "Unavailable";
+}
+
 function updateFeaturedGrids(payload) {
-  const videos = normalizeFeaturedItems(payload?.featuredVideos);
-  const shorts = normalizeFeaturedItems(payload?.featuredShorts);
+  const rawVideos = payload?.featuredVideos ?? payload?.videos;
+  const rawShorts = payload?.featuredShorts ?? payload?.shorts;
+  const videos = selectNewestItems(normalizeFeaturedItems(rawVideos), 3);
+  const shorts = selectNewestItems(normalizeFeaturedItems(rawShorts), 3);
 
   if (videos.length) {
     renderVideoGrid("videos-grid", videos);
@@ -505,6 +544,8 @@ async function init() {
 
   // If opened as a local file, browsers often block API calls.
   if (window.location.protocol === "file:") {
+    setStatUnavailable("subscribers-count");
+    setStatUnavailable("viewers-count");
     renderGridEmpty(
       "videos-grid",
       "Preview via Live Server (or any local web server) to load videos from the API. Opening as a file (file://) can block network requests."
@@ -519,22 +560,29 @@ async function init() {
   let hasLoadedOnce = false;
 
   async function refreshYouTube() {
-    try {
-      const payload = await fetchYouTubeData();
-      updateSubscriberCount(payload);
-      const { videos, shorts } = updateFeaturedGrids(payload);
+    const [featuredResult, statsResult] = await Promise.allSettled([
+      fetchYouTubeFeatured(),
+      fetchYouTubeStats()
+    ]);
+
+    if (statsResult.status === "fulfilled") {
+      updateSubscriberCount(statsResult.value);
+      updateViewCount(statsResult.value);
+    } else if (!hasLoadedOnce) {
+      setStatUnavailable("subscribers-count");
+      setStatUnavailable("viewers-count");
+    }
+
+    if (featuredResult.status === "fulfilled") {
+      const { videos, shorts } = updateFeaturedGrids(featuredResult.value);
       updateVideoSchema(videos, shorts);
+    } else if (!hasLoadedOnce) {
+      renderGridEmpty("videos-grid", "Could not load videos right now.");
+      renderGridEmpty("shorts-grid", "Could not load shorts right now.");
+    }
+
+    if (featuredResult.status === "fulfilled" || statsResult.status === "fulfilled") {
       hasLoadedOnce = true;
-    } catch {
-      if (!hasLoadedOnce) {
-        const heroMount = document.getElementById("subscribers-count");
-        if (heroMount) {
-          const current = heroMount.textContent.trim();
-          if (current === "—" || current === "Loading") heroMount.textContent = "Unavailable";
-        }
-        renderGridEmpty("videos-grid", "Could not load videos right now.");
-        renderGridEmpty("shorts-grid", "Could not load shorts right now.");
-      }
     }
   }
 
@@ -543,7 +591,7 @@ async function init() {
   // Lightweight polling for fresh numbers.
   window.setInterval(() => {
     if (document.visibilityState === "visible") refreshYouTube();
-  }, 600000);
+  }, 1800000);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") refreshYouTube();
   });

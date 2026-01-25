@@ -10,7 +10,8 @@ Static website for GitHub Pages.
 - `state.instagramUrl`
 
 2) The homepage loads YouTube data from the API configured in [script.js](script.js):
-- `YOUTUBE_API_ENDPOINT` (currently `https://api.thewolfrider.me/api/youtube`)
+- `YOUTUBE_FEATURED_ENDPOINT` (currently `https://api.thewolfrider.me/youtube/featured`)
+- `YOUTUBE_STATS_ENDPOINT` (currently `https://api.thewolfrider.me/youtube/stats`)
 
 3) Update your contact email in [index.html](index.html) (search for `mailto:`).
 
