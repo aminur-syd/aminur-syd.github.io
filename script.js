@@ -11,16 +11,16 @@ const BRAND = {
   logo: "https://thewolfrider.me/assets/Profile%20Logo.png",
   location: "Dhaka, Bangladesh",
   keywords:
-    "Bangladesh motovlogger, Yamaha V4 BS7 vlogs, motorcycle travel Bangladesh, Dhaka motovlog, couple bike travel vlog Bangladesh"
+    "Bangladesh motovlogger, Yamaha R15M BS7 vlogs, motorcycle travel Bangladesh, Dhaka moto vlog, couple bike travel vlog Bangladesh"
 };
 
-const VIDEO_FALLBACK_DESC = "Bangladesh motovlog from Dhaka on a Yamaha V4 BS7 with couple travel highlights.";
+const VIDEO_FALLBACK_DESC = "Bangladesh motovlog from Dhaka on a Yamaha R15M BS7 with couple travel highlights.";
 
 // API (exact base provided)
 const API_BASE = "https://api.thewolfrider.me";
 
 // API endpoint served from your VPS (update if needed)
-const YOUTUBE_API_ENDPOINT = "https://api.thewolfrider.me/api/youtube";
+const YOUTUBE_API_ENDPOINT = `${API_BASE}/api/youtube`;
 
 // Top slideshow images (static sites can't list directories at runtime).
 // Requested: first image must be /assets/IMG_1074.jpg
@@ -61,7 +61,9 @@ function applyTheme(theme) {
   root.dataset.theme = theme;
 
   const meta = document.querySelector('meta[name="theme-color"]');
-const API_BASE = "https://api.thewolfrider.me"; // API endpoint served from your VPS (update if needed)
+  if (meta) {
+    meta.setAttribute("content", theme === "light" ? "#f8f4ee" : "#0b0f14");
+  }
 
   const btn = document.querySelector(".theme-switch");
   const icon = document.querySelector(".theme-switch-icon");
@@ -70,7 +72,14 @@ const API_BASE = "https://api.thewolfrider.me"; // API endpoint served from your
     btn.setAttribute("aria-checked", String(isLight));
     btn.setAttribute("aria-label", isLight ? "Light mode (switch to dark)" : "Dark mode (switch to light)");
   }
-  if (icon) icon.textContent = theme === "light" ? "SUN" : "MOON";
+  if (icon) {
+    // Animate emoji switch
+    icon.classList.add('switching');
+    setTimeout(() => {
+      icon.textContent = theme === "light" ? "☀️" : "🌙";
+      icon.classList.remove('switching');
+    }, 150);
+  }
 }
 
 function setupThemeToggle() {
@@ -128,6 +137,48 @@ function youtubeShortUrl(videoId) {
   return `https://www.youtube.com/shorts/${encodeURIComponent(videoId)}`;
 }
 
+const animationState = {
+  observer: null,
+  reducedMotion:
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+};
+
+function revealOnScroll(root = document) {
+  const items = root.querySelectorAll("[data-animate]");
+  if (!items.length) return;
+
+  if (animationState.reducedMotion || !("IntersectionObserver" in window)) {
+    items.forEach((el) => el.classList.add("is-visible"));
+    return;
+  }
+
+  if (!animationState.observer) {
+    animationState.observer = new IntersectionObserver(
+      (entries, observer) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+    );
+  }
+
+  items.forEach((el) => animationState.observer.observe(el));
+}
+
+function setupScrollAnimations() {
+  revealOnScroll(document);
+}
+
+function refreshScrollAnimations(root) {
+  revealOnScroll(root || document);
+}
+
 function renderVideoGrid(mountId, videos, options = {}) {
   const grid = document.getElementById(mountId);
   if (!grid) return;
@@ -136,7 +187,7 @@ function renderVideoGrid(mountId, videos, options = {}) {
   const label = options.kind === "shorts" ? "Watch short" : "Watch video";
 
   grid.innerHTML = videos
-    .map((v) => {
+    .map((v, index) => {
       const title = cleanText(v.title) || "The Wolf Rider";
       const descSource = cleanText(v.desc);
       const desc = descSource ? truncateText(descSource, 160) : VIDEO_FALLBACK_DESC;
@@ -144,9 +195,10 @@ function renderVideoGrid(mountId, videos, options = {}) {
       const thumb = safeText(v.thumbnail) || youtubeThumb(v.id);
       const publishedText = formatPublished(v.published);
       const publishedAttr = formatPublishedAttr(v.published);
+      const delay = index * 90;
 
       return `
-        <article class="video-card">
+        <article class="video-card" data-animate style="--delay: ${delay}ms">
           <a class="video-card-link" href="${watch}" target="_blank" rel="noreferrer" aria-label="${label}: ${title}">
             <div class="video-thumb">
               <img src="${thumb}" alt="${title}" loading="lazy" decoding="async" />
@@ -158,25 +210,28 @@ function renderVideoGrid(mountId, videos, options = {}) {
             </h3>
             <p class="video-desc">${desc}</p>
             <p class="video-meta-line">
-              ${publishedText ? `<time datetime="${publishedAttr}">${publishedText}</time> | ` : ""}${BRAND.location} | Yamaha V4 BS7
+              ${publishedText ? `<time datetime="${publishedAttr}">${publishedText}</time> | ` : ""}${BRAND.location} | Yamaha R15M BS7
             </p>
           </div>
         </article>
       `;
     })
     .join("");
+
+  refreshScrollAnimations(grid);
 }
 
 function renderGridEmpty(mountId, message) {
   const grid = document.getElementById(mountId);
   if (!grid) return;
   grid.innerHTML = `
-    <article class="video-card video-card--empty">
+    <article class="video-card video-card--empty" data-animate>
       <div class="video-meta">
         <p class="video-desc">${safeText(message)}</p>
       </div>
     </article>
   `;
+  refreshScrollAnimations(grid);
 }
 
 function getYouTubeApiEndpoint() {
@@ -204,30 +259,6 @@ function normalizeFeaturedItems(items) {
       };
     })
     .filter((v) => v.id);
-}
-
-async function loadSubscribers() {
-  try {
-    // Exact URL provided:
-    // https://api.thewolfrider.me/api/subscribers
-    const payload = await fetchJson("/api/subscribers");
-    const value =
-      payload?.subscriberCount ??
-      payload?.subscribers ??
-      payload?.count ??
-      payload?.data?.subscriberCount ??
-      payload?.data?.subscribers ??
-      payload?.data?.count;
-    const num = Number(value);
-    if (!Number.isFinite(num)) return;
-
-    const formatted = num.toLocaleString();
-    const heroMount = document.getElementById("subscribers-count");
-    if (heroMount) heroMount.textContent = formatted;
-  } catch {
-    const heroMount = document.getElementById("subscribers-count");
-    if (heroMount && heroMount.textContent.trim() === "--") heroMount.textContent = "Unavailable";
-  }
 }
 
 async function fetchYouTubeData() {
@@ -260,7 +291,7 @@ function updateFeaturedGrids(payload) {
     renderGridEmpty("shorts-grid", "No shorts found yet.");
   }
 
-  return videos.length > 0 || shorts.length > 0;
+  return { videos, shorts };
 }
 
 function setupNavToggle() {
@@ -294,6 +325,10 @@ function setupTopSlideshow() {
 
   let currentIndex = 0;
   let timerId = null;
+  const prefersReducedMotion =
+    typeof window !== "undefined" &&
+    typeof window.matchMedia === "function" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function setActiveButton(index) {
     controls.querySelectorAll("button").forEach((btn) => {
@@ -337,6 +372,7 @@ function setupTopSlideshow() {
   }
 
   function scheduleNextTick() {
+    if (prefersReducedMotion) return;
     if (timerId) window.clearTimeout(timerId);
     timerId = window.setTimeout(() => {
       show(currentIndex + 1);
@@ -465,6 +501,7 @@ async function init() {
   setupNavToggle();
 
   setupTopSlideshow();
+  setupScrollAnimations();
 
   // If opened as a local file, browsers often block API calls.
   if (window.location.protocol === "file:") {
@@ -485,12 +522,16 @@ async function init() {
     try {
       const payload = await fetchYouTubeData();
       updateSubscriberCount(payload);
-      updateFeaturedGrids(payload);
+      const { videos, shorts } = updateFeaturedGrids(payload);
+      updateVideoSchema(videos, shorts);
       hasLoadedOnce = true;
     } catch {
       if (!hasLoadedOnce) {
         const heroMount = document.getElementById("subscribers-count");
-        if (heroMount && heroMount.textContent.trim() === "—") heroMount.textContent = "Unavailable";
+        if (heroMount) {
+          const current = heroMount.textContent.trim();
+          if (current === "—" || current === "Loading") heroMount.textContent = "Unavailable";
+        }
         renderGridEmpty("videos-grid", "Could not load videos right now.");
         renderGridEmpty("shorts-grid", "Could not load shorts right now.");
       }
@@ -506,33 +547,6 @@ async function init() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") refreshYouTube();
   });
-
-  let latestVideos = [];
-  let latestShorts = [];
-
-  try {
-    latestVideos = await loadLatest("videos", 3);
-    if (latestVideos.length) {
-      renderVideoGrid("videos-grid", latestVideos);
-    } else {
-      renderGridEmpty("videos-grid", "No videos found yet.");
-    }
-  } catch {
-    renderGridEmpty("videos-grid", "Could not load videos right now.");
-  }
-
-  try {
-    latestShorts = await loadLatest("shorts", 3);
-    if (latestShorts.length) {
-      renderVideoGrid("shorts-grid", latestShorts, { kind: "shorts" });
-    } else {
-      renderGridEmpty("shorts-grid", "No shorts found yet.");
-    }
-  } catch {
-    renderGridEmpty("shorts-grid", "Could not load shorts right now.");
-  }
-
-  updateVideoSchema(latestVideos, latestShorts);
 }
 
 document.addEventListener("DOMContentLoaded", init);

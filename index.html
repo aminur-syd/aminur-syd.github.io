@@ -3,27 +3,31 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0b1220" />
+  <!-- 'theme-color' meta tag is not supported by Firefox, Firefox for Android, Opera -->
+  <!-- Removed theme-color meta tag for compatibility -->
 
-  <title>The Wolf Rider | Bangladesh Motovlogger & Yamaha V4 BS7 Travel Vlogs</title>
-  <meta name="description" content="The Wolf Rider is a Bangladesh motovlogger from Dhaka sharing Yamaha V4 BS7 motorcycle travel vlogs, couple rides, and road stories across Bangladesh." />
+  <title>The Wolf Rider | Every Ride Tells a Story | R15M Bangladesh Moto Vlogs</title>
+  <meta name="description" content="Every ride tells a story - mine is Bangladesh on a Yamaha R15M BS7. Watch couple travel vlogs, road lessons, and moto reviews." />
   <link rel="canonical" href="https://thewolfrider.me/" />
 
-  <meta property="og:title" content="The Wolf Rider | Bangladesh Motovlogger & Yamaha V4 BS7 Travel Vlogs" />
-  <meta property="og:description" content="The Wolf Rider is a Bangladesh motovlogger from Dhaka sharing Yamaha V4 BS7 motorcycle travel vlogs, couple rides, and road stories across Bangladesh." />
+  <meta property="og:title" content="The Wolf Rider | Every Ride Tells a Story | R15M Bangladesh Moto Vlogs" />
+  <meta property="og:description" content="Every ride tells a story - mine is Bangladesh on a Yamaha R15M BS7. Watch couple travel vlogs, road lessons, and moto reviews." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://thewolfrider.me/" />
   <meta property="og:image" content="https://thewolfrider.me/assets/Profile%20Logo.png" />
   <meta property="og:site_name" content="The Wolf Rider" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="The Wolf Rider | Bangladesh Motovlogger & Yamaha V4 BS7 Travel Vlogs" />
-  <meta name="twitter:description" content="The Wolf Rider is a Bangladesh motovlogger from Dhaka sharing Yamaha V4 BS7 motorcycle travel vlogs, couple rides, and road stories across Bangladesh." />
+  <meta name="twitter:title" content="The Wolf Rider | Every Ride Tells a Story | R15M Bangladesh Moto Vlogs" />
+  <meta name="twitter:description" content="Every ride tells a story - mine is Bangladesh on a Yamaha R15M BS7. Watch couple travel vlogs, road lessons, and moto reviews." />
   <meta name="twitter:image" content="https://thewolfrider.me/assets/Profile%20Logo.png" />
   <meta name="twitter:url" content="https://thewolfrider.me/" />
 
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="assets/Profile%20Logo.png" type="image/png" />
   <link rel="apple-touch-icon" href="assets/Profile%20Logo.png" />
+  <script>
+    document.documentElement.classList.add("js");
+  </script>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -35,7 +39,7 @@
         <img class="brand-logo" src="assets/Profile%20Logo.png" alt="The Wolf Rider logo" />
         <span class="brand-text">
           <span class="brand-title">The Wolf Rider</span>
-          <span class="brand-subtitle">Moto vlogs - Rides - Reviews</span>
+          <span class="brand-subtitle">Bangladesh moto vlogs</span>
         </span>
       </a>
 
@@ -51,7 +55,7 @@
         <button class="theme-switch" type="button" role="switch" aria-label="Toggle theme" aria-checked="false">
           <span class="theme-switch-track" aria-hidden="true">
             <span class="theme-switch-thumb">
-              <span class="theme-switch-icon" aria-hidden="true">MOON</span>
+              <span class="theme-switch-icon" aria-hidden="true">🌙</span>
             </span>
           </span>
         </button>
@@ -75,40 +79,45 @@
           loading="eager"
           decoding="async"
         />
-        <div class="top-slideshow-caption" aria-label="Slideshow title">The Wolf Rider</div>
-        <div class="top-slideshow-controls" id="top-slideshow-controls" aria-label="Slideshow buttons"></div>
+        <div class="top-slideshow-controls" id="top-slideshow-controls" data-animate aria-label="Slideshow buttons"></div>
       </div>
     </section>
 
     <section class="hero">
       <div class="container hero-inner">
         <div class="hero-copy">
-          <h1>
+          <span class="kicker" data-animate>Dhaka, Bangladesh - Yamaha R15M BS7</span>
+          <h1 data-animate>
             <span class="hero-title-main">
-              <span class="hero-title-line">Bangladesh motovlogging and motorcycle travel.</span>
-              <span class="hero-title-line">Every ride tells The Wolf Rider story.</span>
+              <span class="hero-title-line">Every ride tells a story,</span>
+              <span class="hero-title-line">and here is mine.</span>
             </span>
-            <span class="hero-title-sub">Dhaka-based Yamaha V4 BS7 couple rides across Bangladesh.</span>
           </h1>
-          <p class="lead">
-            I'm Al-amin Khan, a Bangladesh motovlogger riding a Yamaha V4 BS7. I share couple travel vlogs and motorcycle road stories across Bangladesh.
+          <p class="lead" data-animate>
+            I'm Al-amin Khan. I ride a Yamaha R15M BS7 across Bangladesh and document the routes, the people, and the small lessons from every ride.
           </p>
 
-          <div class="hero-actions">
-            <a class="btn primary" href="https://www.youtube.com/@thewolfriderbd" target="_blank" rel="noreferrer">Watch videos</a>
-            <a class="btn" href="#social">Follow socials</a>
+          <div class="hero-actions" data-animate>
+            <a class="btn primary" href="https://www.youtube.com/@thewolfriderbd" target="_blank" rel="noreferrer noopener">Watch on YouTube</a>
+            <a class="btn" href="#social">Follow the ride</a>
+          </div>
+
+          <div class="hero-badges">
+            <span class="badge" data-animate>Scenic Bangladesh routes</span>
+            <span class="badge" data-animate>Couple travel diaries</span>
+            <span class="badge" data-animate>Safety and gear notes</span>
           </div>
 
           <dl class="hero-stats" aria-label="Highlights">
-            <div>
+            <div data-animate>
               <dt>Content</dt>
-              <dd>Vlogs & rides</dd>
+              <dd>Vlogs + shorts</dd>
             </div>
-            <div>
+            <div data-animate>
               <dt>Focus</dt>
-              <dd>Travel + reviews</dd>
+              <dd>Couple rides</dd>
             </div>
-            <div>
+            <div data-animate>
               <dt>
                 Subscribers
                 <svg class="yt-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="16" height="16">
@@ -116,7 +125,7 @@
                   <path d="M10 9.25V14.75L15.5 12L10 9.25Z" fill="#ffffff"></path>
                 </svg>
               </dt>
-              <dd id="subscribers-count">--</dd>
+              <dd id="subscribers-count" aria-live="polite" aria-atomic="true">Loading</dd>
             </div>
           </dl>
         </div>
@@ -125,12 +134,12 @@
 
     <section class="section" id="videos">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-animate>
           <h2>Featured videos</h2>
-          <p>Newest 3 uploads from YouTube. Click to watch.</p>
+          <p>Latest 3 uploads from YouTube. Tap to watch.</p>
         </div>
 
-        <div class="grid" id="videos-grid" aria-label="Featured videos"></div>
+        <div class="grid grid-scroll" id="videos-grid" aria-label="Featured videos"></div>
 
         <noscript>
           <p class="muted">Latest Bangladesh motovlog videos are on YouTube. Visit <a href="https://www.youtube.com/@thewolfriderbd">The Wolf Rider channel</a> for the newest uploads.</p>
@@ -140,12 +149,12 @@
 
     <section class="section alt" id="shorts">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-animate>
           <h2>Featured shorts</h2>
-          <p>Newest 3 shorts from YouTube. Tap to watch.</p>
+          <p>Quick ride moments from YouTube Shorts.</p>
         </div>
 
-        <div class="grid" id="shorts-grid" aria-label="Featured shorts"></div>
+        <div class="grid grid-scroll" id="shorts-grid" aria-label="Featured shorts"></div>
 
         <noscript>
           <p class="muted">Latest Dhaka and Bangladesh motorcycle travel shorts are on YouTube. Visit <a href="https://www.youtube.com/@thewolfriderbd">The Wolf Rider channel</a> to watch.</p>
@@ -155,35 +164,35 @@
 
     <section class="section alt" id="about">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-animate>
           <h2>About</h2>
           <p>A quick intro for new visitors.</p>
         </div>
 
         <div class="two-col">
-          <div class="card">
+          <div class="card" data-animate>
             <h3>Who I am</h3>
             <p>
-              I'm Al-amin Khan from Dhaka, Bangladesh. I'm a moto vlogger who loves to ride, tight editing, and practical tips.
-              I share experiences about what worked, what did not, and what I learned.
+              I'm Al-amin Khan, a Dhaka-based motovlogger and rider. I document journeys across Bangladesh on a Yamaha R15M BS7
+              with a focus on clear storytelling, practical insights, and responsible riding.
             </p>
             <ul class="list">
-              <li>Ride vlogs & trip planning</li>
-              <li>Gear & bike impressions</li>
-              <li>Route highlights and safety notes</li>
+              <li>Route planning, budgets, and ride logistics</li>
+              <li>Gear breakdowns, bike impressions, and reviews</li>
+              <li>Safety practices and road lessons</li>
             </ul>
           </div>
 
-          <div class="card">
+          <div class="card" data-animate>
             <h3>What you'll find here</h3>
             <p>
-              A clean home base for everything: videos, links, and how to contact me.
-              Over time you can add a blog page or gallery, but this keeps it simple and professional.
+              A professional hub for the latest videos, shorts, and official links. Built mobile-first so viewers
+              can find new content and contact details quickly.
             </p>
             <div class="callout">
               <p class="callout-title">Tip</p>
               <p class="callout-body">
-                Visit my YouTube Channel and Facebook Page to watch the latest videos and connect with me.
+                Visit YouTube for full-length uploads and Facebook for quick updates between rides.
               </p>
             </div>
           </div>
@@ -193,13 +202,13 @@
 
     <section class="section" id="social">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-animate>
           <h2>Social</h2>
-          <p>Follow the ride and stay updated.</p>
+          <p>Follow the ride and stay close to the road.</p>
         </div>
 
         <div class="social-cards">
-          <a class="social-card" id="youtube-link" href="https://www.youtube.com/" target="_blank" rel="noreferrer">
+          <a class="social-card" data-animate id="youtube-link" href="https://www.youtube.com/" target="_blank" rel="noreferrer noopener">
             <div class="social-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M21.8 8.05a3 3 0 0 0-2.1-2.13C17.9 5.5 12 5.5 12 5.5s-5.9 0-7.7.42A3 3 0 0 0 2.2 8.05 31.6 31.6 0 0 0 1.8 12c0 1.32.12 2.63.4 3.95a3 3 0 0 0 2.1 2.13c1.8.42 7.7.42 7.7.42s5.9 0 7.7-.42a3 3 0 0 0 2.1-2.13c.28-1.32.4-2.63.4-3.95 0-1.32-.12-2.63-.4-3.95Z" stroke="currentColor" stroke-width="1.5" />
@@ -213,7 +222,7 @@
             <span class="social-arrow" aria-hidden="true">></span>
           </a>
 
-          <a class="social-card" id="facebook-link" href="https://www.facebook.com/" target="_blank" rel="noreferrer">
+          <a class="social-card" data-animate id="facebook-link" href="https://www.facebook.com/" target="_blank" rel="noreferrer noopener">
             <div class="social-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M14 8.5V7.2c0-.66.54-1.2 1.2-1.2H17V3h-2.3C12.66 3 11 4.66 11 6.7v1.8H9v3h2V21h3v-9.5h2.3l.7-3H14Z" fill="currentColor"/>
@@ -226,7 +235,7 @@
             <span class="social-arrow" aria-hidden="true">></span>
           </a>
 
-          <a class="social-card" id="instagram-link" href="https://www.instagram.com/" target="_blank" rel="noreferrer">
+          <a class="social-card" data-animate id="instagram-link" href="https://www.instagram.com/" target="_blank" rel="noreferrer noopener">
             <div class="social-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8 3h8a5 5 0 0 1 5 5v8a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5V8a5 5 0 0 1 5-5Z" stroke="currentColor" stroke-width="1.5"/>
@@ -246,12 +255,12 @@
 
     <section class="section alt" id="contact">
       <div class="container">
-        <div class="section-head">
+        <div class="section-head" data-animate>
           <h2>Contact</h2>
           <p>For collaborations, sponsorships, or ride invites.</p>
         </div>
 
-        <div class="contact-card">
+        <div class="contact-card" data-animate>
           <div>
             <h3>Let's talk</h3>
             <p class="muted">
@@ -269,10 +278,10 @@
   </main>
 
   <footer class="site-footer">
-    <div class="container footer-inner">
+    <div class="container footer-inner" data-animate>
       <div class="footer-meta">
         <p class="muted">Copyright <span id="year"></span> The Wolf Rider. All rights reserved.</p>
-        <p class="muted">Developed by Aminur Rahman.</p>
+        <p class="muted">Developed by <a href="https://www.facebook.com/sydneyaminur" target="_blank" rel="noreferrer noopener">Aminur Rahman</a>.</p>
       </div>
       <a class="to-top" href="#top">Back to top</a>
     </div>
