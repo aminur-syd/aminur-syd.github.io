@@ -524,8 +524,9 @@ function updateVideoSchema(videos, shorts) {
 // Repo JSON loaders removed (now using the VPS YouTube endpoint).
 
 async function init() {
-  const year = document.getElementById("year");
-  if (year) year.textContent = String(new Date().getFullYear());
+  const years = document.querySelectorAll(".year");
+  const currentYear = String(new Date().getFullYear());
+  years.forEach(el => el.textContent = currentYear);
 
   applyTheme(getPreferredTheme());
   setupThemeToggle();
@@ -536,6 +537,8 @@ async function init() {
   if (yt) yt.href = state.youtubeUrl;
   if (fb) fb.href = state.facebookUrl;
   if (ig) ig.href = state.instagramUrl;
+
+  setupNavToggle();
 
   setupNavToggle();
 
