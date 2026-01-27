@@ -455,6 +455,20 @@ function setupTopSlideshow() {
   });
 }
 
+function setupBackToTop() {
+  const btn = document.getElementById("back-to-top");
+  if (!btn) return;
+
+  btn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    // Attempt to scroll everything possible
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+}
+
 function buildVideoSchemaItems(videos, options = {}) {
   const urlFor = options.kind === "shorts" ? youtubeShortUrl : youtubeWatchUrl;
 
@@ -544,6 +558,7 @@ async function init() {
 
   setupTopSlideshow();
   setupScrollAnimations();
+  setupMobileBackgroundAnimation();
 
   // If opened as a local file, browsers often block API calls.
   if (window.location.protocol === "file:") {
@@ -598,6 +613,131 @@ async function init() {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") refreshYouTube();
   });
+}
+
+function setupMobileBackgroundAnimation() {
+  const canvas = document.getElementById("mobile-bg-canvas");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+  let particles = [];
+  let w, h;
+
+  // Configuration
+  const config = {
+    particleCount: 40,
+    connectionDistance: 100,
+    mouseDistance: 150,
+    baseSpeed: 0.3
+  };
+
+  // Check for reduced motion
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (prefersReducedMotion) return;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+
+  // Theme colors
+  function getThemeColors() {
+    const theme = document.documentElement.dataset.theme || "dark";
+    if (theme === "light") {
+      return {
+        particle: "rgba(21, 30, 44, 0.4)",
+        line: "rgba(21, 30, 44, 0.15)"
+      };
+    } else {
+      return {
+        particle: "rgba(255, 255, 255, 0.4)",
+        line: "rgba(255, 255, 255, 0.15)"
+      };
+    }
+  }
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * w;
+      this.y = Math.random() * h;
+      this.vx = (Math.random() - 0.5) * config.baseSpeed;
+      this.vy = (Math.random() - 0.5) * config.baseSpeed;
+      this.size = Math.random() * 2 + 1;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0 || this.x > w) this.vx *= -1;
+      if (this.y < 0 || this.y > h) this.vy *= -1;
+    }
+
+    draw(color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function initParticles() {
+    particles = [];
+    // Only create particles if on mobile
+    if (window.innerWidth > 768) return;
+
+    // Adjust count based on screen size
+    const count = window.innerWidth < 400 ? 30 : config.particleCount;
+
+    for (let i = 0; i < count; i++) {
+      particles.push(new Particle());
+    }
+  }
+
+  function animate() {
+    // Only animate if on mobile and visible
+    if (window.innerWidth > 768) {
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    const { particle, line } = getThemeColors();
+    ctx.clearRect(0, 0, w, h);
+
+    for (let i = 0; i < particles.length; i++) {
+      let p = particles[i];
+      p.update();
+      p.draw(particle);
+
+      // Connect particles
+      for (let j = i; j < particles.length; j++) {
+        let p2 = particles[j];
+        let dx = p.x - p2.x;
+        let dy = p.y - p2.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < config.connectionDistance) {
+          ctx.strokeStyle = line;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  window.addEventListener("resize", () => {
+    resize();
+    initParticles();
+  });
+
+  resize();
+  initParticles();
+  animate();
 }
 
 document.addEventListener("DOMContentLoaded", init);
