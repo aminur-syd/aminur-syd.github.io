@@ -72,6 +72,11 @@ main {
   flex-shrink: 0;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -85,14 +90,15 @@ body {
     radial-gradient(1200px 600px at 10% -10%, rgba(79, 209, 197, 0.25), transparent 60%),
     radial-gradient(900px 500px at 90% 0%, rgba(255, 179, 71, 0.3), transparent 60%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg2) 70%, #0a1018 100%);
-  background-size: 160% 160%;
-  animation: bgPulse 15s ease-in-out infinite alternate;
+  background-size: 200% 200%;
+  animation: bgPulse 12s ease-in-out infinite alternate;
   background-color: var(--bg2);
   font-family: var(--font-body);
   line-height: 1.6;
   letter-spacing: -0.01em;
   min-height: 100vh;
   overflow-x: hidden;
+  will-change: background-position;
 }
 
 @keyframes bgPulse {
@@ -131,8 +137,8 @@ html[data-theme="light"] body {
     radial-gradient(1200px 600px at 10% -10%, rgba(217, 119, 6, 0.15), transparent 55%),
     radial-gradient(900px 500px at 90% 0%, rgba(15, 158, 138, 0.15), transparent 55%),
     linear-gradient(180deg, var(--bg) 0%, #ffffff 60%, #f4efe7 100%);
-  background-size: 160% 160%;
-  animation: bgPulse 15s ease-in-out infinite alternate;
+  background-size: 200% 200%;
+  animation: bgPulse 12s ease-in-out infinite alternate;
 }
 
 a {
@@ -1525,8 +1531,8 @@ html.js [data-animate].is-visible {
 
 @media (max-width: 480px) {
   .marquee-content span {
-    font-size: 11px;
-    /* Smaller text for phones */
+    font-size: 13px;
+    /* Adjusted for phone readability */
     padding-right: 20px;
   }
 }
