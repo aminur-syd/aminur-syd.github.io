@@ -39,6 +39,7 @@
     document.documentElement.classList.add("js");
   </script>
   <link rel="stylesheet" href="styles.css" />
+  <link rel="preload" as="image" href="assets/IMG_1074.jpg" fetchpriority="high" />
 </head>
 
 <body>
@@ -84,7 +85,7 @@
     <section class="top-slideshow" aria-label="Photo slideshow">
       <div class="top-slideshow-track">
         <img class="top-slideshow-image" id="top-slideshow-image" src="assets/IMG_1074.jpg" alt="Photo 1"
-          loading="eager" decoding="async" />
+          loading="eager" fetchpriority="high" decoding="async" />
         <div class="top-slideshow-controls" id="top-slideshow-controls" data-animate aria-label="Slideshow buttons">
         </div>
       </div>
