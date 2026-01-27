@@ -462,10 +462,24 @@ function setupBackToTop() {
   btn.addEventListener("click", (e) => {
     e.preventDefault();
 
-    // Attempt to scroll everything possible
-    document.body.scrollTop = 0; // For Safari
-    document.documentElement.scrollTop = 0; // For Chrome, Firefox, IE and Opera
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const root = document.documentElement;
+    const body = document.body;
+    const prevRootBehavior = root.style.scrollBehavior;
+    const prevBodyBehavior = body.style.scrollBehavior;
+
+    // Force instant jump regardless of global smooth scroll settings.
+    root.style.scrollBehavior = "auto";
+    body.style.scrollBehavior = "auto";
+
+    window.scrollTo(0, 0);
+    root.scrollTop = 0;
+    body.scrollTop = 0;
+
+    // Restore previous scroll behavior on the next frame.
+    requestAnimationFrame(() => {
+      root.style.scrollBehavior = prevRootBehavior;
+      body.style.scrollBehavior = prevBodyBehavior;
+    });
   });
 }
 
@@ -553,8 +567,7 @@ async function init() {
   if (ig) ig.href = state.instagramUrl;
 
   setupNavToggle();
-
-  setupNavToggle();
+  setupBackToTop();
 
   setupTopSlideshow();
   setupScrollAnimations();
