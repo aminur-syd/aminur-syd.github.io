@@ -641,7 +641,7 @@ function setupMobileBackgroundAnimation() {
     particleCount: 40,
     connectionDistance: 100,
     mouseDistance: 150,
-    baseSpeed: 0.3
+    baseSpeed: 0.5
   };
 
   // Check for reduced motion
