@@ -1558,15 +1558,13 @@ html.js [data-animate].is-visible {
 }
 
 .marquee-content {
-  display: flex;
-  width: max-content;
-  /* Fit content loop */
+  display: inline-block;
+  padding-left: 100%;
   animation: marquee 30s linear infinite;
+  white-space: nowrap;
 }
 
 .marquee-content span {
-  padding-right: 40px;
-  /* Gap between loop items */
   color: var(--muted);
   font-size: 14px;
 }
@@ -1577,7 +1575,7 @@ html.js [data-animate].is-visible {
   }
 
   100% {
-    transform: translateX(-50%);
+    transform: translateX(-100%);
   }
 }
 
