@@ -1392,8 +1392,7 @@ html.js [data-animate].is-visible {
 
 @media (max-width: 719px) {
   .top-slideshow-image {
-    object-fit: contain;
-    background: #0b0f14;
+    object-fit: cover;
   }
 
   .top-slideshow-controls {
